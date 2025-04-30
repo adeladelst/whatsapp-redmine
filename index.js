@@ -561,6 +561,7 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
       session.state = "welcome";
     } catch (error) {
         console.error("Error creating ticket:", error);
+        console.log("Error response:", error.response);
         // if an error code is 422, then set the assigned_to_id to null and try again
         if (error.response && error.response.status === 422) {
           session.assignedToId = null;
