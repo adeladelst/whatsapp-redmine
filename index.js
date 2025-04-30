@@ -58,25 +58,6 @@ app.listen(process.env.PORT || 3000, () => {
 // to verify the callback url from dashboard side - cloud api side
 app.get("/webhook", (req, res) => {
     
-    // Log all the requests for debugging
-    console.log("Received request:", req.body);
-    console.log("Request headers:", req.headers);
-    console.log("Request method:", req.method);
-    console.log("Request URL:", req.url);
-    console.log("Request body:", req.body);
-    console.log("Request query:", req.query);
-    console.log("Request params:", req.params);
-    console.log("Request IP:", req.ip);
-    console.log("Request protocol:", req.protocol);
-    console.log("Request path:", req.path);
-    console.log("Request original URL:", req.originalUrl);
-    console.log("Request base URL:", req.baseUrl);
-    console.log("Request hostname:", req.hostname);
-    console.log("Request fresh:", req.fresh);
-    console.log("Request stale:", req.stale);
-    console.log("Request xhr:", req.xhr);
-    console.log("Request secure:", req.secure);
-    
     let mode = req.query["hub.mode"];
     let challenge = req.query["hub.challenge"];
     let token = req.query["hub.verify_token"];
@@ -91,26 +72,6 @@ app.get("/webhook", (req, res) => {
 
 // Main webhook handler
 app.post("/webhook", async (req, res) => {
-
-    // Log all the requests for debugging
-    console.log("Received request:", req.body);
-    console.log("Request headers:", req.headers);
-    console.log("Request method:", req.method);
-    console.log("Request URL:", req.url);
-    console.log("Request body:", req.body);
-    console.log("Request query:", req.query);
-    console.log("Request params:", req.params);
-    console.log("Request IP:", req.ip);
-    console.log("Request protocol:", req.protocol);
-    console.log("Request path:", req.path);
-    console.log("Request original URL:", req.originalUrl);
-    console.log("Request base URL:", req.baseUrl);
-    console.log("Request hostname:", req.hostname);
-    console.log("Request fresh:", req.fresh);
-    console.log("Request stale:", req.stale);
-    console.log("Request xhr:", req.xhr);
-    console.log("Request secure:", req.secure);
-
     let body_param = req.body;
     if (body_param.object) {
       if (
@@ -272,6 +233,13 @@ app.post("/webhook", async (req, res) => {
       await sendWelcomeMessage(from, phon_no_id, session.userName);
       return;
     }
+      
+      if (msg_body.toLowerCase() === "menu") {
+        resetSession(session);
+        await sendWelcomeMessage(from, phon_no_id, session.userName);
+        return;
+      }
+
     
     const projects = await getUserProjectsByToken(user_token);
     const selectedProject = projects.find(p => p.id == msg_body);
