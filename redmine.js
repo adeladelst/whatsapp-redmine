@@ -464,7 +464,7 @@ const getTrackersByProjectId = async (project_id) => {
         `${apiUrl}/projects/${project_id}.json?include=trackers`,
         axiosConfig
         );
-        return response.data.trackers;
+        return response.data.project.trackers;
     } catch (error) {
         console.log(error);
         throw new Error(error);
