@@ -461,7 +461,7 @@ const getAllTrackers = async () => {
 const getTrackersByProjectId = async (project_id) => {
     try {
         let response = await axios.get(
-        `${apiUrl}/projects/${project_id}/trackers.json`,
+        `${apiUrl}/projects/${project_id}.json?include=trackers`,
         axiosConfig
         );
         return response.data.trackers;
