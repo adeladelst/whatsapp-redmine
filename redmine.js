@@ -452,6 +452,26 @@ const getAllTrackers = async () => {
   }
 };
 
+/**
+ * Get trackers by project id
+ * @param {Integer} project_id - The id of the project to get the trackers for.
+ * * @returns {object} The trackers related to the project.
+ * 
+ */
+const getTrackersByProjectId = async (project_id) => {
+    try {
+        let response = await axios.get(
+        `${apiUrl}/projects/${project_id}/trackers.json`,
+        axiosConfig
+        );
+        return response.data.trackers;
+    } catch (error) {
+        console.log(error);
+        throw new Error(error);
+    }
+}
+    
+
 // we'll check if whatsapp tracker exists before creating an issue
 // else we'll warn the user and create in bug tracker
 
@@ -497,6 +517,7 @@ module.exports = {
   getIssuesByToken,
     getAllProjects,
     getAllTrackers,
+    getTrackersByProjectId,
   getProjectsByPhoneNumber,
   createProject,
   // createTracker,

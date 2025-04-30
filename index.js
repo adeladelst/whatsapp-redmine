@@ -289,7 +289,7 @@ app.post("/webhook", async (req, res) => {
     
     if (msg_body === "1") {
       session.state = "awaiting_tracker_selection";
-      const trackers = await getAllTrackers();
+      const trackers = await getTrackersByProjectId(session.selectedProjectId);
       
       let trackerList = trackers.map(t => `ID: ${t.id}, Type: ${t.name}`).join("\n");
       await sendMessage(
@@ -363,7 +363,7 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
     }
   
     try {
-      const trackers = await getAllTrackers();
+      const trackers = await getTrackersByProjectId(session.selectedProjectId);
       const selectedTracker = trackers.find(t => t.id == msg_body);
   
       if (!selectedTracker) {
@@ -609,7 +609,7 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
     const confirmationMessage = 
       `Veuillez confirmer la création du ticket avec les détails suivants :\n\n` +
       `Projet: ${session.selectedProjectId}\n` +
-      `Type: ${(await getAllTrackers()).find(t => t.id == session.selectedTrackerId).name}\n` +
+      `Type: ${(await getTrackersByProjectId(session.selectedProjectId)).find(t => t.id == session.selectedTrackerId).name}\n` +
       `Sujet: ${session.issueSubject}\n` +
       `Description: ${session.issueDescription.substring(0, 50)}...\n` +
       `Priorité: ${selectedPriority.name}\n` +
