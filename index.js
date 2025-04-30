@@ -47,9 +47,9 @@ const emojies = {
   };
   
 const ASSIGNEES = {
-    1: { id: 123, name: "Maintenance Manager" }, // Remplacez 123 par l'ID réel dans Redmine
-    2: { id: 456, name: "Emna Haddou" },       // Remplacez 456 par l'ID réel
-    3: { id: 789, name: "Chaima Machraoui" }   // Remplacez 789 par l'ID réel
+    1: { id: 16, name: "Maintenance Manager" }, // Remplacez 123 par l'ID réel dans Redmine
+    2: { id: 299, name: "Emna Haddou" },       // Remplacez 456 par l'ID réel
+    3: { id: 411, name: "Chaima Machraoui" }   // Remplacez 789 par l'ID réel
   };
   const doubleHorizontalLine = String.fromCharCode(0x2e3a);
 
