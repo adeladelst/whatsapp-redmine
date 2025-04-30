@@ -159,7 +159,7 @@ app.post("/webhook", async (req, res) => {
         break;
         
       case "awaiting_action_choice":
-        await handleActionChoice(from, phon_no_id, msg_body);
+        await handleActionChoice(from, phon_no_id, msg_body, user_token);
         break;
         
       case "awaiting_tracker_selection":
@@ -259,7 +259,7 @@ app.post("/webhook", async (req, res) => {
     );
   }
   
-  async function handleActionChoice(from, phon_no_id, msg_body) {
+  async function handleActionChoice(from, phon_no_id, msg_body, user_token) {
     const session = userSessions[from];
     
     if (msg_body.toLowerCase() === "annuler") {
