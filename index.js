@@ -48,9 +48,9 @@ const emojies = {
   };
   
 const ASSIGNEES = {
-    1: { id: 16, name: "Maintenance Manager" }, // Remplacez 123 par l'ID réel dans Redmine
-    2: { id: 299, name: "Emna Haddou" },       // Remplacez 456 par l'ID réel
-    3: { id: 411, name: "Chaima Machraoui" }   // Remplacez 789 par l'ID réel
+    1: { id: 16, name: "Maintenance Manager" },
+    2: { id: 299, name: "Emna Haddou" },
+    3: { id: 411, name: "Chaima Machraoui" }
   };
   const doubleHorizontalLine = String.fromCharCode(0x2e3a);
 
@@ -545,12 +545,6 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
           description: issueDesc,
           priority_id: session.issuePriority,
           assigned_to_id: session.assignedToId,
-        //   custom_fields: [
-        //     {
-        //       id: parseInt(process.env.PHONE_FIELD_ID), // ID du champ personnalisé pour le numéro de téléphone
-        //       value: from
-        //     }
-        //   ]
         }
       };
   
@@ -566,7 +560,13 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
       resetSession(session);
       session.state = "welcome";
     } catch (error) {
-      console.error("Error creating ticket:", error);
+        console.error("Error creating ticket:", error);
+        // if an error code is 422, then set the assigned_to_id to null and try again
+        if (error.response && error.response.status === 422) {
+          session.assignedToId = null;
+          await handleCreationConfirmation(from, phon_no_id, msg_body, user_token, user_name);
+          return;
+        }
       await sendMessage(
         from,
         phon_no_id,
