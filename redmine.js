@@ -464,7 +464,22 @@ const getTrackersByProjectId = async (project_id) => {
         `${apiUrl}/projects/${project_id}.json?include=trackers`,
         axiosConfig
         );
-        return response.data.project.trackers;
+        const trackers = [];
+
+        if (!response.data?.project?.trackers) {
+            return trackers;
+        }
+
+        response.data.project.trackers.forEach((tracker) => {
+            if (tracker.id !== 1) {
+                trackers.push({
+                    id: tracker.id,
+                    name: tracker.name,
+                });
+            }
+        });
+
+        return trackers;
     } catch (error) {
         console.log(error);
         throw new Error(error);
