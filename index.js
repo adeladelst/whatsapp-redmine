@@ -352,7 +352,7 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
     }
   
     try {
-      const trackers = await getTrackers();
+      const trackers = await getAllTrackers();
       const selectedTracker = trackers.find(t => t.id == msg_body);
   
       if (!selectedTracker) {
@@ -481,7 +481,7 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
       const confirmationMessage = 
         `Veuillez confirmer la création du ticket avec les détails suivants :\n\n` +
         `Projet: ${session.selectedProjectId}\n` +
-        `Type: ${(await getTrackers()).find(t => t.id == session.selectedTrackerId).name}\n` +
+        `Type: ${(await getAllTrackers()).find(t => t.id == session.selectedTrackerId).name}\n` +
         `Sujet: ${session.issueSubject}\n` +
         `Description: ${session.issueDescription.substring(0, 50)}...\n` +
         `Priorité: ${selectedPriority.name}\n\n` +
