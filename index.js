@@ -17,6 +17,7 @@ const {
   createIssueFromUser,
   getIssuesByToken,
   getAllTrackers,
+  getTrackersByProjectId,
 } = require("./redmine");
 
 require("dotenv").config();
