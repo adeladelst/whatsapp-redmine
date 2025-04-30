@@ -440,13 +440,10 @@ const deleteProject = async (project_id) => {
  */
 const getAllTrackers = async () => {
   try {
-    let response = await axios
-      .get(`${apiUrl}/trackers.json`, axiosConfig)
-      .then((response) => {
-        console.log(response.data);
-      });
+      let response = await axios
+          .get(`${apiUrl}/trackers.json`, axiosConfig);
 
-    return response.data;
+    return response?.data?.trackers;
   } catch (error) {
     console.log(error);
     throw new Error(error);
