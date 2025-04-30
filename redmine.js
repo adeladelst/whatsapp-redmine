@@ -134,6 +134,9 @@ const createIssueFromUser = async (token, issue) => {
     });
     return response.data;
   } catch (error) {
+    console.log(error);
+    console.log(issue);
+    console.log(token);
     throw new Error(error);
   }
 };
