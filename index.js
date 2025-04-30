@@ -583,7 +583,7 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
       }
   
       // Format the issue details message
-      const statusEmoji = emojies[statusMapping[selectedIssue.status.name.toLowerCase()] || "";
+      const statusEmoji = emojies[statusMapping[selectedIssue.status.name.toLowerCase()]] || "";
       const message = 
         `Détails du ticket #${selectedIssue.id}:\n\n` +
         `Sujet: ${selectedIssue.subject}\n` +
