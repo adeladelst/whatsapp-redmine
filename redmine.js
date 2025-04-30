@@ -126,6 +126,7 @@ const createIssue = async (issue) => {
 
 const createIssueFromUser = async (token, issue) => {
   try {
+    console.log(issue);
     let response = await axios.post(`${apiUrl}/issues.json`, issue, {
       headers: {
         "X-Redmine-API-Key": token,
@@ -134,9 +135,7 @@ const createIssueFromUser = async (token, issue) => {
     });
     return response.data;
   } catch (error) {
-    console.log(error);
-    console.log(issue);
-    console.log(token);
+    console.log(error.response.data.errors);
     throw new Error(error);
   }
 };
