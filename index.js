@@ -46,6 +46,11 @@ const emojies = {
     "Clôturé": "closed"
   };
   
+const ASSIGNEES = {
+    1: { id: 123, name: "Maintenance Manager" }, // Remplacez 123 par l'ID réel dans Redmine
+    2: { id: 456, name: "Emna Haddou" },       // Remplacez 456 par l'ID réel
+    3: { id: 789, name: "Chaima Machraoui" }   // Remplacez 789 par l'ID réel
+  };
   const doubleHorizontalLine = String.fromCharCode(0x2e3a);
 
 // User session data
@@ -96,6 +101,7 @@ app.post("/webhook", async (req, res) => {
             issuePriority: "",
             selectedProjectId: "",
             selectedTrackerId: "",
+            assignedToId: "",
             userName: user_name
           };
           
@@ -175,6 +181,10 @@ app.post("/webhook", async (req, res) => {
         await handleDescriptionInput(from, phon_no_id, msg_body);
         break;
         
+      case "awaiting_assignee":
+        await handleAssigneeSelection(from, phon_no_id, msg_body);
+        break;
+        
       case "awaiting_priority":
         await handlePriorityInput(from, phon_no_id, msg_body);
         break;
@@ -199,7 +209,7 @@ app.post("/webhook", async (req, res) => {
   }
   
   async function sendWelcomeMessage(from, phon_no_id, user_name) {
-    const message = `Bonjour M. ${user_name.split(' ')[0]}\n\n` +
+    const message = `Bonjour Mme/M. ${user_name.split(' ')[0]}\n\n` +
       "Saisissez, à partir de la liste, le numéro du projet auquel vous souhaitez créer ou consulter un ticket";
     
     const projects = await getUserProjectsByToken(await getUserTokenByPhoneNumber(from, user_name));
@@ -339,6 +349,7 @@ async function sendMessage(from, phon_no_id, message) {
     session.issuePriority = "";
     session.selectedProjectId = "";
     session.selectedTrackerId = "";
+    session.assignedToId = "";
 }
   
 async function handleTrackerSelection(from, phon_no_id, msg_body) {
@@ -476,18 +487,18 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
       }
   
       session.issuePriority = msg_body;
-      session.state = "confirm_creation";
-  
-      const confirmationMessage = 
-        `Veuillez confirmer la création du ticket avec les détails suivants :\n\n` +
-        `Projet: ${session.selectedProjectId}\n` +
-        `Type: ${(await getAllTrackers()).find(t => t.id == session.selectedTrackerId).name}\n` +
-        `Sujet: ${session.issueSubject}\n` +
-        `Description: ${session.issueDescription.substring(0, 50)}...\n` +
-        `Priorité: ${selectedPriority.name}\n\n` +
-        `Répondez "oui" pour confirmer ou "non" pour annuler.`;
-  
-      await sendMessage(from, phon_no_id, confirmationMessage);
+      session.state = "awaiting_assignee";
+    
+      let assigneeList = Object.entries(ASSIGNEES)
+        .map(([key, val]) => `ID: ${key} - ${val.name}`)
+        .join("\n");
+    
+      await sendMessage(
+        from,
+        phon_no_id,
+        `Veuillez sélectionner la personne à assigner :\n\n${assigneeList}`
+        );
+        
     } catch (error) {
       console.error("Error handling priority input:", error);
       await sendMessage(
@@ -532,12 +543,13 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
           subject: session.issueSubject,
           description: issueDesc,
           priority_id: session.issuePriority,
-          custom_fields: [
-            {
-              id: parseInt(process.env.PHONE_FIELD_ID), // ID du champ personnalisé pour le numéro de téléphone
-              value: from
-            }
-          ]
+          assigned_to_id: session.assignedToId,
+        //   custom_fields: [
+        //     {
+        //       id: parseInt(process.env.PHONE_FIELD_ID), // ID du champ personnalisé pour le numéro de téléphone
+        //       value: from
+        //     }
+        //   ]
         }
       };
   
@@ -561,7 +573,51 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
       );
       session.state = "confirm_creation";
     }
-  }
+}
+  
+  async function handleAssigneeSelection(from, phon_no_id, msg_body) {
+    const session = userSessions[from];
+  
+    if (msg_body.toLowerCase() === "annuler") {
+      resetSession(session);
+      await sendMessage(from, phon_no_id, "Opération annulée.");
+      await sendWelcomeMessage(from, phon_no_id, session.userName);
+      return;
+    }
+  
+    const selectedAssignee = ASSIGNEES[msg_body];
+  
+    if (!selectedAssignee) {
+      let assigneeList = Object.entries(ASSIGNEES)
+        .map(([key, val]) => `ID: ${key} - ${val.name}`)
+        .join("\n");
+      
+      await sendMessage(
+        from,
+        phon_no_id,
+        "⚠️ Assignation invalide. Veuillez sélectionner un ID valide :\n\n" + assigneeList
+      );
+      return;
+    }
+  
+    session.assignedToId = selectedAssignee.id;
+    session.state = "confirm_creation";
+  
+    const priorities = await getAllPriorites();
+    const selectedPriority = priorities.issue_priorities.find(p => p.id == session.issuePriority);
+  
+    const confirmationMessage = 
+      `Veuillez confirmer la création du ticket avec les détails suivants :\n\n` +
+      `Projet: ${session.selectedProjectId}\n` +
+      `Type: ${(await getTrackers()).find(t => t.id == session.selectedTrackerId).name}\n` +
+      `Sujet: ${session.issueSubject}\n` +
+      `Description: ${session.issueDescription.substring(0, 50)}...\n` +
+      `Priorité: ${selectedPriority.name}\n` +
+      `Assigné à: ${selectedAssignee.name}\n\n` +
+      `Répondez "oui" pour confirmer ou "non" pour annuler.`;
+  
+    await sendMessage(from, phon_no_id, confirmationMessage);
+}
   
   async function handleTicketSelection(from, phon_no_id, msg_body, user_token) {
     const session = userSessions[from];
