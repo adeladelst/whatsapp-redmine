@@ -63,7 +63,14 @@ app.listen(process.env.PORT || 3000, () => {
 
 // to verify the callback url from dashboard side - cloud api side
 app.get("/webhook", (req, res) => {
-    
+    console.log("Webhook GET request received");
+    // console query, params, body, url , headers 
+    console.log("Query:", req.query);
+    console.log("Params:", req.params);
+    console.log("Body:", req.body);
+    console.log("URL:", req.url);
+    console.log("Headers:", req.headers);
+
     let mode = req.query["hub.mode"];
     let challenge = req.query["hub.challenge"];
     let token = req.query["hub.verify_token"];
@@ -78,6 +85,15 @@ app.get("/webhook", (req, res) => {
 
 // Main webhook handler
 app.post("/webhook", async (req, res) => {
+    
+    console.log("Webhook POST request received");
+    // console query, params, body, url , headers 
+    console.log("Query:", req.query);
+    console.log("Params:", req.params);
+    console.log("Body:", req.body);
+    console.log("URL:", req.url);
+    console.log("Headers:", req.headers);
+
     let body_param = req.body;
     if (body_param.object) {
       if (
@@ -561,9 +577,9 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
       session.state = "welcome";
     } catch (error) {
         console.error("Error creating ticket:", error);
-        console.log("Error response:", error.response);
+        console.log("Error response:", error.status);
         // if an error code is 422, then set the assigned_to_id to null and try again
-        if (error.response && error.response.status === 422) {
+        if (error.status && error.status === 422) {
           session.assignedToId = null;
           await handleCreationConfirmation(from, phon_no_id, msg_body, user_token, user_name);
           return;
