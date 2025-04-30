@@ -331,4 +331,281 @@ async function sendMessage(from, phon_no_id, message) {
     session.issuePriority = "";
     session.selectedProjectId = "";
     session.selectedTrackerId = "";
+}
+  
+async function handleTrackerSelection(from, phon_no_id, msg_body) {
+    const session = userSessions[from];
+  
+    if (msg_body.toLowerCase() === "annuler") {
+      resetSession(session);
+      await sendMessage(from, phon_no_id, "Opération annulée.");
+      await sendWelcomeMessage(from, phon_no_id, session.userName);
+      return;
+    }
+  
+    try {
+      const trackers = await getTrackers();
+      const selectedTracker = trackers.find(t => t.id == msg_body);
+  
+      if (!selectedTracker) {
+        let trackerList = trackers.map(t => `ID: ${t.id}, Type: ${t.name}`).join("\n");
+        await sendMessage(
+          from,
+          phon_no_id,
+          "⚠️ Type de ticket invalide. Veuillez sélectionner un ID valide :\n\n" + trackerList
+        );
+        return;
+      }
+  
+      session.selectedTrackerId = msg_body;
+      session.state = "awaiting_subject";
+      await sendMessage(
+        from,
+        phon_no_id,
+        "Veuillez entrer le sujet du ticket (en quelques mots) :"
+      );
+    } catch (error) {
+      console.error("Error handling tracker selection:", error);
+      await sendMessage(
+        from,
+        phon_no_id,
+        "⚠️ Une erreur est survenue lors de la sélection du type de ticket. Veuillez réessayer."
+      );
+      session.state = "awaiting_tracker_selection";
+    }
+  }
+  
+  async function handleSubjectInput(from, phon_no_id, msg_body) {
+    const session = userSessions[from];
+  
+    if (msg_body.toLowerCase() === "annuler") {
+      resetSession(session);
+      await sendMessage(from, phon_no_id, "Opération annulée.");
+      await sendWelcomeMessage(from, phon_no_id, session.userName);
+      return;
+    }
+  
+    if (msg_body.length < 5) {
+      await sendMessage(
+        from,
+        phon_no_id,
+        "⚠️ Le sujet doit contenir au moins 5 caractères. Veuillez entrer un sujet plus détaillé :"
+      );
+      return;
+    }
+  
+    session.issueSubject = msg_body;
+    session.state = "awaiting_description";
+    await sendMessage(
+      from,
+      phon_no_id,
+      "Veuillez entrer une description détaillée du ticket :"
+    );
+  }
+  
+  async function handleDescriptionInput(from, phon_no_id, msg_body) {
+    const session = userSessions[from];
+  
+    if (msg_body.toLowerCase() === "annuler") {
+      resetSession(session);
+      await sendMessage(from, phon_no_id, "Opération annulée.");
+      await sendWelcomeMessage(from, phon_no_id, session.userName);
+      return;
+    }
+  
+    if (msg_body.length < 10) {
+      await sendMessage(
+        from,
+        phon_no_id,
+        "⚠️ La description doit contenir au moins 10 caractères. Veuillez entrer une description plus détaillée :"
+      );
+      return;
+    }
+  
+    session.issueDescription = msg_body;
+    session.state = "awaiting_priority";
+  
+    try {
+      const priorities = await getAllPriorites();
+      let message = "Veuillez sélectionner la priorité :\n\n";
+      priorities.issue_priorities.forEach((priority) => {
+        message += `ID: ${priority.id} - ${priority.name}\n`;
+      });
+      await sendMessage(from, phon_no_id, message);
+    } catch (error) {
+      console.error("Error fetching priorities:", error);
+      await sendMessage(
+        from,
+        phon_no_id,
+        "⚠️ Impossible de charger les priorités. Veuillez réessayer plus tard."
+      );
+      session.state = "awaiting_description";
+    }
+  }
+  
+  async function handlePriorityInput(from, phon_no_id, msg_body) {
+    const session = userSessions[from];
+  
+    if (msg_body.toLowerCase() === "annuler") {
+      resetSession(session);
+      await sendMessage(from, phon_no_id, "Opération annulée.");
+      await sendWelcomeMessage(from, phon_no_id, session.userName);
+      return;
+    }
+  
+    try {
+      const priorities = await getAllPriorites();
+      const selectedPriority = priorities.issue_priorities.find(p => p.id == msg_body);
+  
+      if (!selectedPriority) {
+        let priorityList = priorities.issue_priorities.map(p => `ID: ${p.id}, Priorité: ${p.name}`).join("\n");
+        await sendMessage(
+          from,
+          phon_no_id,
+          "⚠️ Priorité invalide. Veuillez sélectionner un ID valide :\n\n" + priorityList
+        );
+        return;
+      }
+  
+      session.issuePriority = msg_body;
+      session.state = "confirm_creation";
+  
+      const confirmationMessage = 
+        `Veuillez confirmer la création du ticket avec les détails suivants :\n\n` +
+        `Projet: ${session.selectedProjectId}\n` +
+        `Type: ${(await getTrackers()).find(t => t.id == session.selectedTrackerId).name}\n` +
+        `Sujet: ${session.issueSubject}\n` +
+        `Description: ${session.issueDescription.substring(0, 50)}...\n` +
+        `Priorité: ${selectedPriority.name}\n\n` +
+        `Répondez "oui" pour confirmer ou "non" pour annuler.`;
+  
+      await sendMessage(from, phon_no_id, confirmationMessage);
+    } catch (error) {
+      console.error("Error handling priority input:", error);
+      await sendMessage(
+        from,
+        phon_no_id,
+        "⚠️ Une erreur est survenue lors de la sélection de la priorité. Veuillez réessayer."
+      );
+      session.state = "awaiting_priority";
+    }
+  }
+  
+  async function handleCreationConfirmation(from, phon_no_id, msg_body, user_token, user_name) {
+    const session = userSessions[from];
+  
+    if (msg_body.toLowerCase() === "non") {
+      resetSession(session);
+      await sendMessage(from, phon_no_id, "Création de ticket annulée.");
+      await sendWelcomeMessage(from, phon_no_id, user_name);
+      return;
+    }
+  
+    if (msg_body.toLowerCase() !== "oui") {
+      await sendMessage(
+        from,
+        phon_no_id,
+        "⚠️ Réponse invalide. Veuillez répondre 'oui' pour confirmer ou 'non' pour annuler."
+      );
+      return;
+    }
+  
+    try {
+      const issueDesc =
+        `${session.issueDescription}\n\n` +
+        `${doubleHorizontalLine}\n` +
+        `Numéro de téléphone: ${from}\n` +
+        `Émis par: ${user_name}`;
+  
+      const issue = {
+        issue: {
+          project_id: session.selectedProjectId,
+          tracker_id: session.selectedTrackerId,
+          subject: session.issueSubject,
+          description: issueDesc,
+          priority_id: session.issuePriority,
+          custom_fields: [
+            {
+              id: parseInt(process.env.PHONE_FIELD_ID), // ID du champ personnalisé pour le numéro de téléphone
+              value: from
+            }
+          ]
+        }
+      };
+  
+      const issueResponse = await createIssueFromUser(user_token, issue);
+      await sendMessage(
+        from,
+        phon_no_id,
+        `✅ Ticket créé avec succès avec l'ID : ${issueResponse.issue.id}\n\n` +
+        `Vous pouvez suivre son évolution en tapant "suivre" à tout moment.`
+      );
+  
+      // Reset session after successful creation
+      resetSession(session);
+      session.state = "welcome";
+    } catch (error) {
+      console.error("Error creating ticket:", error);
+      await sendMessage(
+        from,
+        phon_no_id,
+        "⚠️ Une erreur est survenue lors de la création du ticket. Veuillez réessayer."
+      );
+      session.state = "confirm_creation";
+    }
+  }
+  
+  async function handleTicketSelection(from, phon_no_id, msg_body, user_token) {
+    const session = userSessions[from];
+  
+    if (msg_body.toLowerCase() === "annuler") {
+      resetSession(session);
+      await sendMessage(from, phon_no_id, "Opération annulée.");
+      await sendWelcomeMessage(from, phon_no_id, session.userName);
+      return;
+    }
+  
+    try {
+      const issues = await getIssuesByToken(user_token, from);
+      const selectedIssue = issues.find(i => i.id == msg_body);
+  
+      if (!selectedIssue) {
+        let issueList = issues.map(i => 
+          `ID: ${i.id}, Sujet: ${i.subject}, Statut: ${i.status.name}`
+        ).join("\n");
+        
+        await sendMessage(
+          from,
+          phon_no_id,
+          "⚠️ Ticket invalide. Veuillez sélectionner un ID valide :\n\n" + issueList
+        );
+        return;
+      }
+  
+      // Format the issue details message
+      const statusEmoji = emojies[statusMapping[selectedIssue.status.name.toLowerCase()] || "";
+      const message = 
+        `Détails du ticket #${selectedIssue.id}:\n\n` +
+        `Sujet: ${selectedIssue.subject}\n` +
+        `Statut: ${selectedIssue.status.name} ${statusEmoji}\n` +
+        `Priorité: ${selectedIssue.priority.name}\n` +
+        `Créé le: ${new Date(selectedIssue.created_on).toLocaleDateString()}\n` +
+        `Mise à jour: ${new Date(selectedIssue.updated_on).toLocaleDateString()}\n\n` +
+        `Description:\n${selectedIssue.description.substring(0, 200)}...\n\n` +
+        `Pour revenir au menu principal, tapez "menu".`;
+  
+      await sendMessage(from, phon_no_id, message);
+      
+      // Reset to welcome state but keep project selection
+      session.state = "welcome";
+      session.selectedProjectId = "";
+    } catch (error) {
+      console.error("Error handling ticket selection:", error);
+      await sendMessage(
+        from,
+        phon_no_id,
+        "⚠️ Une erreur est survenue lors de la récupération des détails du ticket. Veuillez réessayer."
+      );
+      session.state = "awaiting_ticket_selection";
+    }
   }
