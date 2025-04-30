@@ -1,0 +1,26 @@
+{
+  "name": "medianet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "createIssue.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.2",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "nodemon": "^3.1.4",
+    "supertest": "^7.0.0",
+    "twilio": "^5.2.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jsdoc": "^4.0.3",
+    "jsdoc-to-markdown": "^8.0.1"
+  }
+}
