@@ -274,6 +274,33 @@ const getIssuesByToken = async (token, phone_number) => {
   }
 };
 
+/**
+ * Gets all the issues related to a specific project id
+ * @param {String} token - The token to get the issues for.
+ * @param {Integer} project_id - The id of the project to get the issues for.
+ * @returns {object} The issues related to the project.
+ * 
+ * */
+const getIssuesByProjectId = async (token, project_id) => {
+    try {
+        let response = await axios.get(`${apiUrl}/issues.json`, {
+        headers: {
+            "X-Redmine-API-Key": token,
+            "Content-Type": "application/json",
+        },
+        params: {
+            project_id: project_id,
+        },
+        });
+        let issues = response.data.issues;
+        return issues;
+    } catch (error) {
+        console.log(error);
+        throw new Error(error);
+    }
+}
+    
+
 //////////////////////////////////////// Projects ////////////////////////////////////////
 
 /**
@@ -536,6 +563,7 @@ module.exports = {
   deleteProject,
   getAllPriorites,
   getUserProjectsByToken,
-  getUserTokenByPhoneNumber,
+    getUserTokenByPhoneNumber,
+    getIssuesByProjectId,
   createIssueFromUser,
 };

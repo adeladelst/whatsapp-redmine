@@ -18,6 +18,7 @@ const {
   getIssuesByToken,
   getAllTrackers,
   getTrackersByProjectId,
+  getIssuesByProjectId,
 } = require("./redmine");
 
 require("dotenv").config();
@@ -308,7 +309,7 @@ app.post("/webhook", async (req, res) => {
       );
     } else if (msg_body === "2") {
       session.state = "awaiting_ticket_selection";
-      const issues = await getIssuesByToken(user_token, from);
+      const issues = await getIssuesByProjectId(user_token, session.selectedProjectId);
       
       if (issues.length === 0) {
         await sendMessage(
@@ -638,9 +639,8 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
     }
   
     try {
-      const issues = await getIssuesByToken(user_token, from);
+      const issues = await getIssuesByProjectId(user_token, session.selectedProjectId);
       const selectedIssue = issues.find(i => i.id == msg_body);
-  
       if (!selectedIssue) {
         let issueList = issues.map(i => 
           `ID: ${i.id}, Sujet: ${i.subject}, Statut: ${i.status.name}`
