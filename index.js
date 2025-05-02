@@ -560,8 +560,7 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
       await sendMessage(
         from,
         phon_no_id,
-        `✅ Ticket créé avec succès avec l'ID : ${issueResponse.issue.id}\n\n` +
-        `Vous pouvez suivre son évolution en tapant "suivre" à tout moment.`
+        `✅ Ticket créé avec succès avec l'ID : ${issueResponse.issue.id}\n\n`
       );
   
       // Reset session after successful creation
