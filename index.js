@@ -85,16 +85,6 @@ app.get("/webhook", (req, res) => {
 
 // Main webhook handler
 app.post("/webhook", async (req, res) => {
-    
-    console.log("Webhook POST request received");
-    // console query, params, body, url , headers 
-    console.log("Body:", req.body);
-    console.log("changes:", req.body.entry[0].changes);
-    console.log("metadata:", req.body.entry[0].changes[0].value.metadata);
-    console.log("statuses:", req.body.entry[0].changes[0].value.statuses);
-    console.log("contacts:", req.body.entry[0].changes[0].value.contacts);
-    console.log("messages:", req.body.entry[0].changes[0].value.messages);
-    console.log("Headers:", req.headers);
 
     let body_param = req.body;
     if (body_param.object) {
@@ -578,14 +568,13 @@ async function handleTrackerSelection(from, phon_no_id, msg_body) {
       resetSession(session);
       session.state = "welcome";
     } catch (error) {
-        console.error("Error creating ticket:", error);
-        console.log("Error response:", error.status);
-        // if an error code is 422, then set the assigned_to_id to null and try again
-        if (error.status && error.status === 422) {
+        if (session.assignedToId && (error?.response?.status === 422)) {
+        console.log("Error 422: Setting assigned_to_id to null and retrying...");
           session.assignedToId = null;
           await handleCreationConfirmation(from, phon_no_id, msg_body, user_token, user_name);
           return;
         }
+        
       await sendMessage(
         from,
         phon_no_id,
