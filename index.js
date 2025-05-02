@@ -92,7 +92,8 @@ app.post("/webhook", async (req, res) => {
     console.log("changes:", req.body.entry[0].changes);
     console.log("metadata:", req.body.entry[0].changes[0].value.metadata);
     console.log("statuses:", req.body.entry[0].changes[0].value.statuses);
-    console.log("origin:", req.body.entry[0].changes[0].value.statuses[0].conversation.origin);
+    console.log("contacts:", req.body.entry[0].changes[0].value.contacts);
+    console.log("messages:", req.body.entry[0].changes[0].value.messages);
     console.log("Headers:", req.headers);
 
     let body_param = req.body;
