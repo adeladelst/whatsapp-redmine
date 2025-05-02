@@ -63,13 +63,13 @@ app.listen(process.env.PORT || 3000, () => {
 
 // to verify the callback url from dashboard side - cloud api side
 app.get("/webhook", (req, res) => {
-    console.log("Webhook GET request received");
-    // console query, params, body, url , headers 
-    console.log("Query:", req.query);
-    console.log("Params:", req.params);
-    console.log("Body:", req.body);
-    console.log("URL:", req.url);
-    console.log("Headers:", req.headers);
+    // console.log("Webhook GET request received");
+    // // console query, params, body, url , headers 
+    // console.log("Query:", req.query);
+    // console.log("Params:", req.params);
+    // console.log("Body:", req.body);
+    // console.log("URL:", req.url);
+    // console.log("Headers:", req.headers);
 
     let mode = req.query["hub.mode"];
     let challenge = req.query["hub.challenge"];
@@ -88,10 +88,8 @@ app.post("/webhook", async (req, res) => {
     
     console.log("Webhook POST request received");
     // console query, params, body, url , headers 
-    console.log("Query:", req.query);
-    console.log("Params:", req.params);
     console.log("Body:", req.body);
-    console.log("URL:", req.url);
+    console.log("Body:", req.body.entry[0].changes);
     console.log("Headers:", req.headers);
 
     let body_param = req.body;
