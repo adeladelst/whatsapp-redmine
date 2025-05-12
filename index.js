@@ -125,6 +125,8 @@ app.post("/webhook", async (req, res) => {
         const admin_token = process.env.ADMIN_TOKEN;
         const user_token = await getUserTokenByPhoneNumber(from, user_name);
         
+          console.log("User token:", user_token);
+          console.log("phone number:", from);
         if (!user_token) {
           await sendMessage(
             from,
@@ -342,10 +344,10 @@ app.post("/webhook", async (req, res) => {
 async function sendMessage(from, phon_no_id, message) {
     await axios({
       method: "POST",
-      url: `https://graph.facebook.com/v16.0/${phon_no_id}/messages?access_token=${token}`,
+      url: `https://graph.facebook.com/v16.0/503385032858177/messages?access_token=${token}`,
       data: {
         messaging_product: "whatsapp",
-        to: from,
+        to: 21696147117,
         text: { body: message },
       },
       headers: { "Content-Type": "application/json" },
